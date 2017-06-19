@@ -1,0 +1,9 @@
+package tarea1;
+
+public class cliente {
+
+	public cliente() {
+		// TODO Auto-generated constructor stub
+	}
+
+}
