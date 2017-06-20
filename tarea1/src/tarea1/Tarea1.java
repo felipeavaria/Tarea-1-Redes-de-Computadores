@@ -21,58 +21,58 @@ public class Tarea1 {
         
         while (true) {
             try (Socket socket = server.accept()) {
-            	/*
+            	
             	Map<String, Object> parameters = new HashMap<String, Object>();
                 InputStreamReader isr =  new InputStreamReader(socket.getInputStream());
-                BufferedReader reader = new BufferedReader(isr);
-                String line = reader.readLine();
-                parseQuery(line, parameters);
-                System.out.println("\n\n\n AASDASD \n\n\n");
-                System.out.println("\n\n\n"+line+"\n\n\n");
-                for (Map.Entry entry: parameters.entrySet()){
-                	System.out.println(entry.getKey()+ "  "+ entry.getValue());
+                
+                BufferedReader in = new BufferedReader(isr);
+                String line; int postDataI = 0;
+                line = in.readLine();
+                //Separo primera linea, para diferenciar POST y GET
+                String[] parts = line.split(" ");
+                System.out.println(line);
+                while ((line = in.readLine()) != null && (line.length() != 0)) {
+                    //System.out.println("HTTP-HEADER: " + line);
+                    if (line.indexOf("Content-Length:") > -1) {
+                    postDataI = new Integer(
+                        line.substring(
+                            line.indexOf("Content-Length:") + 16,
+                            line.length())).intValue();
+                    }
                 }
-                int algo = 0; String asd = "";
-                while (!line.isEmpty()) {
-                	if(algo == 0) asd = line;
-                	System.out.println(line);
-                    line = reader.readLine();
-                    algo++;
+                             
+                String asd = parts[1];
+                String postData = "";
+                
+                if(parts[0].equals("POST")){
+                	// read the post data
+                	if (postDataI > 0) {
+                    	char[] charArray = new char[postDataI];
+                    	in.read(charArray, 0, postDataI);
+                    	postData = new String(charArray);
+                    	System.out.println(postData);
+                	}
                 }
-                String[] parts = asd.split(" ");
-                //System.out.println(parts[1]);
-*/                
-                InputStream stream = socket.getInputStream();
-                byte[] b = new byte[1024];
-                byte[] c = new byte[1024];
-                int algo = 0; String asd = "";
-                //while(stream.read(b) > 0 && !socket.isInputShutdown()) {
-                while(stream.read(b) > 0 && !socket.isInputShutdown()) {
-                    System.out.println(new String(b));
-                	//if(algo == 0){ System.out.println(new String(c)); c = b.clone();}
-                    String[] parts = new String(b).split(" ");
-                    asd = parts[1];
-                    
-                    b = null;
-                    b = new byte[1024];
-                    System.out.println(asd);
-                    algo++;
-                    System.out.println(algo);
-                }
-                //String[] parts = new String(b).split(" ");
-                System.out.println("sali del loop");
-            	
+                
+                
                 if(asd.equals("/home_old")){
                 	String httpResponse = "HTTP/1.1 301 Moved Permanently\r\nLocation: /\r\n\r\n";
                 	System.out.println("301");
                 	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
                 else if(asd.equals("/secret")){
-                	
-                	String aux = "403";
-                	String httpResponse = "HTTP/1.1 403 Forbidden\r\n\r\n" + renderHtml(aux);
-                	System.out.println("403");
-                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                	if(postData.equals("uname=root&psw=rdc2017")){
+                		String aux = "";
+                		String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + "Autentificación Completada";
+                		System.out.println("200");
+                		socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                	}
+                	else{
+                		String aux = "403";
+                		String httpResponse = "HTTP/1.1 403 Forbidden\r\n\r\n" + renderHtml(aux);
+                		System.out.println("403");
+                		socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                	}
                 }
                 else if(asd.equals("/")){
                 	String aux = "index";
@@ -85,7 +85,9 @@ public class Tarea1 {
                 	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
                 else{
-                	
+                	String aux = asd.split("/")[1];
+                	String httpResponse = "HTTP/1.1 200 OK\r\nVary: Upgrade-Insecure-Requests\r\n\r\n" + renderHtml(aux);
+                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
             	socket.close();   
 
