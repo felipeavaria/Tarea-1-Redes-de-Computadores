@@ -48,51 +48,52 @@ public class Tarea1 {
                 int algo = 0; String asd = "";
                 //while(stream.read(b) > 0 && !socket.isInputShutdown()) {
                 while(stream.read(b) > 0 && !socket.isInputShutdown()) {
-
                     System.out.println(new String(b));
                 	//if(algo == 0){ System.out.println(new String(c)); c = b.clone();}
-                    routing(new String(b), socket);
+                    String[] parts = new String(b).split(" ");
+                    asd = parts[1];
+                    
                     b = null;
                     b = new byte[1024];
+                    System.out.println(asd);
                     algo++;
                     System.out.println(algo);
                 }
+                //String[] parts = new String(b).split(" ");
+                System.out.println("sali del loop");
+            	
+                if(asd.equals("/home_old")){
+                	String httpResponse = "HTTP/1.1 301 Moved Permanently\r\nLocation: /\r\n\r\n";
+                	System.out.println("301");
+                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                }
+                else if(asd.equals("/secret")){
+                	
+                	String aux = "403";
+                	String httpResponse = "HTTP/1.1 403 Forbidden\r\n\r\n" + renderHtml(aux);
+                	System.out.println("403");
+                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                }
+                else if(asd.equals("/")){
+                	String aux = "index";
+                	String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + renderHtml(aux);
+                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                }
+                else if(asd.equals("/login")){
+                	String aux = "login";
+                	String httpResponse = "HTTP/1.1 200 OK\r\nVary: Upgrade-Insecure-Requests\r\n\r\n" + renderHtml(aux);
+                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                }
+                else{
+                	
+                }
+            	socket.close();   
 
             }
         }
     }
     
-    public static void routing(String c, Socket socket) throws IOException{
-        String[] parts = new String(c).split(" ");
-        System.out.println(parts[1]);
-    	
-        if(parts[1].equals("/home_old")){
-        	String httpResponse = "HTTP/1.1 301 Moved Permanently\r\nLocation: /\r\n\r\n";
-        	System.out.println("301");
-        	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        }
-        else if(parts[1].equals("/secret")){
-        	
-        	String aux = "403";
-        	String httpResponse = "HTTP/1.1 403 Forbidden\r\n\r\n" + renderHtml(aux);
-        	System.out.println("403");
-        	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        }
-        else if(parts[1].equals("/")){
-        	String aux = "index";
-        	String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + renderHtml(aux);
-        	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        }
-        else if(parts[1].equals("/login")){
-        	String aux = "login";
-        	String httpResponse = "HTTP/1.1 200 OK\r\nVary: Upgrade-Insecure-Requests\r\n\r\n" + renderHtml(aux);
-        	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        }
-        else{
-        	
-        }
-    	socket.close();    	
-    }
+
     
     public static String renderHtml(String route){
         File archivo = null;
