@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.DateFormat;
+import java.util.Date;
+
+
 
 public class Tarea1 {
 
@@ -15,7 +19,7 @@ public class Tarea1 {
 
 	public static void main(String args[] ) throws IOException {
 
-    	int port = 8081;
+    	int port = 8080;
         server = new ServerSocket(port);
         System.out.println("Listening for connection on port "+port+" ....");
         
@@ -31,7 +35,7 @@ public class Tarea1 {
                 line = in.readLine();
                 //Separo primera linea, para diferenciar POST y GET
                 String[] parts = line.split(" ");
-                System.out.println(line);
+                //System.out.println(line);
                 while ((line = in.readLine()) != null && (line.length() != 0)) {
                     //System.out.println("HTTP-HEADER: " + line);
                     if (line.indexOf("Content-Length:") > -1) {
@@ -57,11 +61,15 @@ public class Tarea1 {
                 
                 
                 if(asd.equals("/home_old")){
+					historialLog("localhost:"+port+"/home_old" );
                 	String httpResponse = "HTTP/1.1 301 Moved Permanently\r\nLocation: /\r\n\r\n";
                 	System.out.println("301");
+                	
                 	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                	
                 }
                 else if(asd.equals("/secret")){
+					
                 	if(postData.equals("uname=root&psw=rdc2017")){
                 		String aux = "";
                 		String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + "Autentificación Completada";
@@ -74,22 +82,21 @@ public class Tarea1 {
                 		System.out.println("403");
                 		socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 	}
+                	historialLog("localhost:"+port+"/secret" );
                 }
                 else if(asd.equals("/")){
-                	String aux = "index";
+                	String aux = "home";
                 	String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + renderHtml(aux);
+                	historialLog("localhost:"+port+"/home" );
                 	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
                 else if(asd.equals("/login")){
                 	String aux = "login";
                 	String httpResponse = "HTTP/1.1 200 OK\r\nVary: Upgrade-Insecure-Requests\r\n\r\n" + renderHtml(aux);
+                	historialLog("localhost:"+port+"/login" );
                 	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
-                else{
-                	String aux = asd.split("/")[1];
-                	String httpResponse = "HTTP/1.1 200 OK\r\nVary: Upgrade-Insecure-Requests\r\n\r\n" + renderHtml(aux);
-                	socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                }
+
             	socket.close();   
 
             }
@@ -98,13 +105,14 @@ public class Tarea1 {
     
 
     
-    public static String renderHtml(String route){
+    public static String renderHtml(String page){
         File archivo = null;
         FileReader fr = null;
         BufferedReader br = null;
         String s = ""; 
+        System.out.println("route : "+page);
         try {
-            archivo = new File (route+".html");
+            archivo = new File (page +".html");
             fr = new FileReader (archivo);
             br = new BufferedReader(fr);
 
@@ -127,44 +135,35 @@ public class Tarea1 {
     	return s;
     	
     }
+    public static void historialLog(String Url ){
+        FileWriter fichero = null;
+        PrintWriter pw = null;
+        
+        Date date = new Date();
+        
+        try
+        {
+            fichero = new FileWriter("log.txt",true);
+            pw = new PrintWriter(fichero);
+            pw.println("<127.0.0.1> <"+ Url +"> <" + DateFormat.getInstance().format(date) + ">");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           try {
+        	   if (null != fichero)
+        		   fichero.close();
+           	   } catch (Exception e2) {
+           		   e2.printStackTrace();
+           	   }
+        }
+    	
+    }
     
-    public static void parseQuery(String query, Map<String, 
-    		  Object> parameters) throws UnsupportedEncodingException {
-
-    		         if (query != null) {
-    		                 String pairs[] = query.split("[&]");
-    		                 for (String pair : pairs) {
-    		                          String param[] = pair.split("[=]");
-    		                          String key = null;
-    		                          String value = null;
-    		                          if (param.length > 0) {
-    		                          key = URLDecoder.decode(param[0], 
-    		                            System.getProperty("file.encoding"));
-    		                          }
-
-    		                          if (param.length > 1) {
-    		                                   value = URLDecoder.decode(param[1], 
-    		                                   System.getProperty("file.encoding"));
-    		                          }
-
-    		                          if (parameters.containsKey(key)) {
-    		                                   Object obj = parameters.get(key);
-    		                                   if (obj instanceof List<?>) {
-    		                                            List<String> values = (List<String>) obj;
-    		                                            values.add(value);
-
-    		                                   } else if (obj instanceof String) {
-    		                                            List<String> values = new ArrayList<String>();
-    		                                            values.add((String) obj);
-    		                                            values.add(value);
-    		                                            parameters.put(key, values);
-    		                                   }
-    		                          } else {
-    		                                   parameters.put(key, value);
-    		                          }
-    		                 }
-    		         }
-    		}
+    
+    
+    
+ 
 
 }
 
