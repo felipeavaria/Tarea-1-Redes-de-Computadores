@@ -5,17 +5,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Tarea1 {
 
-    public static void main(String args[] ) throws IOException {
+    private static ServerSocket server;
+
+	public static void main(String args[] ) throws IOException {
 
     	int port = 8081;
-        ServerSocket server = new ServerSocket(port);
+        server = new ServerSocket(port);
         System.out.println("Listening for connection on port "+port+" ....");
         
         
